@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}" />
+    <!-- <link rel="stylesheet" href="../static/style.css"> -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald:wght@300&display=swap" rel="stylesheet">
+
+    <title>youmusic | Home</title>
+</head>
+
+<body>
+    <div class="navbar-cont">
+        <img src="../static/logo.png" alt="logo" class="logo">
+        <div class="logo-text">youmusic</div>
+    </div>
+    
+    <form class="container">
+        <div id="chatbox">
+            <div class="text-cont" id="chat-text">
+                <p class="botText"><span>Hi! What is your name</span></p>
+            </div>
+        </div>
+        <div id="userInput">
+            <input id="text" type="text" name="msg" placeholder="Type your message" class="form-control text-input">
+            <button type="submit" id="send" class="btn btn-warning btn-send">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </form>
+
+<script>
+    function loading(){
+        let children = document.getElementById("chat-text").children.length;
+        if (children == 14){
+            var load = document.createElement("p")
+            load.className = "botText";
+            load.textContent = "...";
+            load.id = "loading-text";
+            document.getElementById("chat-text").appendChild(load);
+        }
+    }
+
+    function endChatbot(){
+        $("#text").prop('disabled', true);
+        $("#send").prop('disabled', true);
+    }
+
+    function updateScroll(){
+        var element = document.getElementById("chatbox");
+        element.scrollTop = element.scrollHeight;
+    }
+
+
+    $(document).ready(function() {
+        $("form").on("submit", function(event) {
+            var rawText = $("#text").val();
+                var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+                $("#text").val("");
+                $("#chat-text").append(userHtml);
+                document.getElementById("userInput").scrollIntoView({
+                    block: "start",
+                    behavior: "smooth",
+                });
+
+            loading();
+            updateScroll();
+            
+            $.ajax({
+                data: {
+                    msg: rawText,
+                },
+                type: "POST",
+                url: "/get",
+            }).done(function(data) {
+                var botHtml = '<p class="botText"><span>' + data + "</span></p>";
+                    $("#chat-text").append($.parseHTML(botHtml));
+                    document.getElementById("userInput").scrollIntoView({
+                        block: "start",
+                        behavior: "smooth",
+                    });
+                if(data.toLowerCase() == "shutting down"){
+                    endChatbot();
+                } 
+
+                updateScroll();
+                if(document.getElementById("loading-text"))
+                    document.getElementById("loading-text").remove();
+
+            });
+            event.preventDefault();
+        });
+    });
+</script>
+</body>
+
+</html>
